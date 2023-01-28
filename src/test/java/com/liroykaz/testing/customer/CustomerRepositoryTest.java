@@ -12,7 +12,11 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@DataJpaTest
+@DataJpaTest(
+        properties = {
+                "spring.jpa.properties.javax.persistence.validation.mode=none"
+        }
+)
 class CustomerRepositoryTest {
 
     @Autowired
@@ -58,7 +62,7 @@ class CustomerRepositoryTest {
         // When
         // Then
         assertThatThrownBy(() -> underTest.save(customer))
-                .hasMessageContaining("not-null property references a null or transient value : com.amigoscode.testing.customer.Customer.name")
+                .hasMessageContaining("not-null property references a null or transient value : com.liroykaz.testing.customer.Customer.name")
                 .isInstanceOf(DataIntegrityViolationException.class);
 
     }
@@ -72,7 +76,7 @@ class CustomerRepositoryTest {
         // When
         // Then
         assertThatThrownBy(() -> underTest.save(customer))
-                .hasMessageContaining("not-null property references a null or transient value : com.amigoscode.testing.customer.Customer.phoneNumber")
+                .hasMessageContaining("not-null property references a null or transient value : com.liroykaz.testing.customer.Customer.phoneNumber")
                 .isInstanceOf(DataIntegrityViolationException.class);
 
     }
