@@ -9,6 +9,6 @@ import java.util.UUID;
 
 public interface CustomerRepository extends CrudRepository<Customer, UUID> {
 
-    @Query(value = "select id, name, phoneNumber from customer where phone_number = :phoneNumber", nativeQuery = true)
+    @Query(value = "select id, name, phone_number from customer where phone_number = :phoneNumber", nativeQuery = true)
     Optional<Customer> selectCustomerByPhoneNumber(@Param("phoneNumber") String phoneNumber);
 }
