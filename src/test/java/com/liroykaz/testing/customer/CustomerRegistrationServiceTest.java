@@ -1,5 +1,6 @@
 package com.liroykaz.testing.customer;
 
+import com.liroykaz.testing.PhoneNumberValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -21,6 +22,8 @@ class CustomerRegistrationServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
+    @Mock
+    private PhoneNumberValidator validator;
 
     @Captor
     private ArgumentCaptor<Customer> customerArgumentCaptor;
@@ -30,13 +33,13 @@ class CustomerRegistrationServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        underTest = new CustomerRegistrationService(customerRepository);
+        underTest = new CustomerRegistrationService(customerRepository, validator);
     }
 
     @Test
     void itShouldSaveNewCustomer() {
         //given a phone number with a customer
-        String phoneNumber = "0000099";
+        String phoneNumber = "+447000000000";
         Customer customer = new Customer(UUID.randomUUID(), "Mariam", phoneNumber);
 
         //... a request
@@ -45,6 +48,10 @@ class CustomerRegistrationServiceTest {
         //... no customer with phone number passed
         given(customerRepository.selectCustomerByPhoneNumber(customer.getPhoneNumber()))
                 .willReturn(Optional.empty());
+
+        //... valid phone number
+        given(validator.test(phoneNumber)).willReturn(Boolean.TRUE);
+
         //when
         underTest.registerNewCustomer(request);
 
@@ -68,6 +75,37 @@ class CustomerRegistrationServiceTest {
         given(customerRepository.selectCustomerByPhoneNumber(phoneNumber))
                 .willReturn(Optional.of(responsedCustomer));
 
+        //... valid phone number
+        given(validator.test(phoneNumber)).willReturn(Boolean.TRUE);
+
+        //when
+
+        //then
+        then(customerRepository).shouldHaveNoInteractions();
+        assertThatThrownBy(() -> underTest.registerNewCustomer(request))
+                .isInstanceOf(IllegalStateException.class);
+
+        //finally
+        then(customerRepository).should(never()).save(any(Customer.class));
+    }
+
+    @Test
+    void itShouldThrowNewExceptionForNotValidPhoneNumber() {
+        //given
+        String phoneNumber = "0000099";
+        Customer requestedCustomer = new Customer(UUID.randomUUID(), "Mariam", phoneNumber);
+        Customer responsedCustomer = new Customer(UUID.randomUUID(), "Johny", phoneNumber);
+
+        //... a request
+        CustomerRegistrationRequest request = new CustomerRegistrationRequest(requestedCustomer);
+
+        //... existed customer by phoneNumber
+        given(customerRepository.selectCustomerByPhoneNumber(phoneNumber))
+                .willReturn(Optional.of(responsedCustomer));
+
+        //... valid phone number
+        given(validator.test(phoneNumber)).willReturn(Boolean.FALSE);
+
         //when
 
         //then
@@ -82,7 +120,7 @@ class CustomerRegistrationServiceTest {
     @Test
     void itShouldNotSaveCustomerWhenCustomerExists() {
         //given
-        String phoneNumber = "0000099";
+        String phoneNumber = "+447000000000";
         Customer requestedCustomer = new Customer(UUID.randomUUID(), "Mariam", phoneNumber);
 
         //... a request
@@ -91,6 +129,9 @@ class CustomerRegistrationServiceTest {
         //... no customer with phone number passed
         given(customerRepository.selectCustomerByPhoneNumber(phoneNumber))
                 .willReturn(Optional.of(requestedCustomer));
+
+        //... valid phone number
+        given(validator.test(phoneNumber)).willReturn(Boolean.TRUE);
 
         //when
         underTest.registerNewCustomer(request);
@@ -104,7 +145,7 @@ class CustomerRegistrationServiceTest {
     @Test
     void itShouldSaveNewCustomerWhenIdIsNull() {
         //given a phone number with a customer
-        String phoneNumber = "0000099";
+        String phoneNumber = "+447000000000";
         Customer customer = new Customer(UUID.randomUUID(), "Mariam", phoneNumber);
 
         //... a request
@@ -113,6 +154,10 @@ class CustomerRegistrationServiceTest {
         //... no customer with phone number passed
         given(customerRepository.selectCustomerByPhoneNumber(customer.getPhoneNumber()))
                 .willReturn(Optional.empty());
+
+        //... valid phone number
+        given(validator.test(phoneNumber)).willReturn(Boolean.TRUE);
+
         //when
         underTest.registerNewCustomer(request);
 

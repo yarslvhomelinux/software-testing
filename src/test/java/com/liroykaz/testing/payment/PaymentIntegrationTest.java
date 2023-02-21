@@ -11,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -37,7 +36,7 @@ class PaymentIntegrationTest {
     void itShouldCreatePaymentSuccessfully() throws Exception {
         //Given a customer
         UUID customerId = UUID.randomUUID();
-        Customer customer = new Customer(customerId, "James", "00000000");
+        Customer customer = new Customer(customerId, "James", "+447000000000");
         CustomerRegistrationRequest request = new CustomerRegistrationRequest(customer);
 
         // Register
